@@ -1,15 +1,15 @@
+FROM openshift/origin-release:golang-1.10 AS builder
+
+COPY . /go/src/github.com/directxman12/k8s-prometheus-adapter
+
+WORKDIR /go/src/github.com/directxman12/k8s-prometheus-adapter
+RUN make
+
+
 FROM openshift/origin-base
 
-ENV GOPATH /go
-RUN mkdir $GOPATH
-
-COPY . $GOPATH/src/github.com/directxman12/k8s-prometheus-adapter
-
-RUN yum install -y golang make && \
-    cd $GOPATH/src/github.com/directxman12/k8s-prometheus-adapter && \
-    make && cp $GOPATH/src/github.com/directxman12/k8s-prometheus-adapter/_output/amd64/adapter /usr/bin/cm-adapter && \
-    rm -rf $GOPATH && yum erase -y golang make && yum clean all
-
+COPY --from=builder /go/src/github.com/directxman12/k8s-prometheus-adapter/_output/amd64/adapter /usr/bin/cm-adapter
+    
 LABEL io.k8s.display-name="OpenShift Prometheus Custom Metrics Adapter" \
       io.k8s.description="This is a component of OpenShift Container Platform that provides the Kubernetes custom metrics API based on Prometheus metrics" \
       io.openshift.tags="openshift" \
