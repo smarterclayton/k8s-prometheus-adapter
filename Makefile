@@ -5,10 +5,11 @@ ARCH?=amd64
 ALL_ARCH=amd64 arm arm64 ppc64le s390x
 ML_PLATFORMS=linux/amd64,linux/arm,linux/arm64,linux/ppc64le,linux/s390x
 OUT_DIR?=./_output
-VENDOR_DOCKERIZED=0
 
 VERSION?=latest
-GOIMAGE=golang:1.10
+GOIMAGE=golang:1.12
+GO111MODULE=on
+export GO111MODULE
 
 ifeq ($(ARCH),amd64)
 	BASEIMAGE?=busybox
@@ -24,7 +25,6 @@ ifeq ($(ARCH),ppc64le)
 endif
 ifeq ($(ARCH),s390x)
 	BASEIMAGE?=s390x/busybox
-	GOIMAGE=s390x/golang:1.10
 endif
 
 .PHONY: all docker-build push-% push test verify-gofmt gofmt verify build-local-image
@@ -63,14 +63,9 @@ push: ./manifest-tool $(addprefix push-,$(ALL_ARCH))
 	curl -sSL https://github.com/estesp/manifest-tool/releases/download/v0.5.0/manifest-tool-linux-amd64 > manifest-tool
 	chmod +x manifest-tool
 
-vendor: Gopkg.lock
-ifeq ($(VENDOR_DOCKERIZED),1)
-	docker run -it -v $(shell pwd):/go/src/github.com/directxman12/k8s-prometheus-adapter -w /go/src/github.com/directxman12/k8s-prometheus-adapter golang:1.10 /bin/bash -c "\
-		curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh \
-		&& dep ensure -vendor-only"
-else
-	dep ensure -vendor-only -v
-endif
+vendor:
+	go mod tidy
+	go mod vendor
 
 test:
 	CGO_ENABLED=0 go test ./pkg/...
@@ -81,4 +76,9 @@ verify-gofmt:
 gofmt:
 	./hack/gofmt-all.sh
 
-verify: verify-gofmt test
+go-mod:
+	go mod tidy
+	go mod vendor
+	go mod verify
+
+verify: verify-gofmt go-mod test
