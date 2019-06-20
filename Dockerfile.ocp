@@ -1,4 +1,4 @@
-FROM openshift/origin-release:golang-1.10 AS builder
+FROM openshift/origin-release:golang-1.12 AS builder
 
 COPY . /go/src/github.com/directxman12/k8s-prometheus-adapter
 
