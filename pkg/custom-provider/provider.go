@@ -140,7 +140,7 @@ func (p *prometheusProvider) buildQuery(info provider.CustomMetricInfo, namespac
 	return *queryResults.Vector, nil
 }
 
-func (p *prometheusProvider) GetMetricByName(name types.NamespacedName, info provider.CustomMetricInfo) (*custom_metrics.MetricValue, error) {
+func (p *prometheusProvider) GetMetricByName(name types.NamespacedName, info provider.CustomMetricInfo, label labels.Selector) (*custom_metrics.MetricValue, error) {
 	// construct a query
 	queryResults, err := p.buildQuery(info, name.Namespace, name.Name)
 	if err != nil {
@@ -171,7 +171,7 @@ func (p *prometheusProvider) GetMetricByName(name types.NamespacedName, info pro
 	return p.metricFor(resultValue, name, info)
 }
 
-func (p *prometheusProvider) GetMetricBySelector(namespace string, selector labels.Selector, info provider.CustomMetricInfo) (*custom_metrics.MetricValueList, error) {
+func (p *prometheusProvider) GetMetricBySelector(namespace string, selector labels.Selector, info provider.CustomMetricInfo, label labels.Selector) (*custom_metrics.MetricValueList, error) {
 	// fetch a list of relevant resource names
 	resourceNames, err := helpers.ListObjectNames(p.mapper, p.kubeClient, namespace, selector, info)
 	if err != nil {
