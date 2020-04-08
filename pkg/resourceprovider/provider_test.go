@@ -19,7 +19,6 @@ package resourceprovider
 import (
 	"time"
 
-	"github.com/kubernetes-incubator/metrics-server/pkg/provider"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
@@ -28,6 +27,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/metrics/pkg/apis/metrics"
+	"sigs.k8s.io/metrics-server/pkg/api"
 
 	config "github.com/directxman12/k8s-prometheus-adapter/cmd/config-gen/utils"
 	prom "github.com/directxman12/k8s-prometheus-adapter/pkg/client"
@@ -93,7 +93,7 @@ func buildResList(cpu, memory float64) corev1.ResourceList {
 
 var _ = Describe("Resource Metrics Provider", func() {
 	var (
-		prov                   provider.MetricsProvider
+		prov                   api.MetricsGetter
 		fakeProm               *fakeprom.FakePrometheusClient
 		cpuQueries, memQueries resourceQuery
 	)
@@ -149,7 +149,7 @@ var _ = Describe("Resource Metrics Provider", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		By("verifying that the reported times for each are the earliest times for each pod")
-		Expect(times).To(Equal([]provider.TimeInfo{
+		Expect(times).To(Equal([]api.TimeInfo{
 			{Timestamp: pmodel.Time(10).Time(), Window: 1 * time.Minute},
 			{Timestamp: pmodel.Time(10).Time(), Window: 1 * time.Minute},
 			{Timestamp: pmodel.Time(270).Time(), Window: 1 * time.Minute},
@@ -200,7 +200,7 @@ var _ = Describe("Resource Metrics Provider", func() {
 			metrics.ContainerMetrics{Name: "cont2", Usage: buildResList(1110.0, 3110.0)},
 		))
 		Expect(times).To(HaveLen(2))
-		Expect(times[0]).To(Equal(provider.TimeInfo{Timestamp: pmodel.Time(10).Time(), Window: 1 * time.Minute}))
+		Expect(times[0]).To(Equal(api.TimeInfo{Timestamp: pmodel.Time(10).Time(), Window: 1 * time.Minute}))
 	})
 
 	It("should be able to list metrics for nodes", func() {
@@ -219,7 +219,7 @@ var _ = Describe("Resource Metrics Provider", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		By("verifying that the reported times for each are the earliest times for each pod")
-		Expect(times).To(Equal([]provider.TimeInfo{
+		Expect(times).To(Equal([]api.TimeInfo{
 			{Timestamp: pmodel.Time(10).Time(), Window: 1 * time.Minute},
 			{Timestamp: pmodel.Time(12).Time(), Window: 1 * time.Minute},
 		}))
@@ -256,7 +256,7 @@ var _ = Describe("Resource Metrics Provider", func() {
 			buildResList(1200.0, 2200.0),
 			nil,
 		}))
-		Expect(times).To(Equal([]provider.TimeInfo{
+		Expect(times).To(Equal([]api.TimeInfo{
 			{Timestamp: pmodel.Time(10).Time(), Window: 1 * time.Minute},
 			{Timestamp: pmodel.Time(12).Time(), Window: 1 * time.Minute},
 			{},
