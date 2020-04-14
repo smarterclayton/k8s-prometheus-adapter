@@ -1,9 +1,12 @@
+component: "Monitoring"
+
 reviewers:
 - brancz
 - metalmatze
 - paulfantom
 - s-urbaniak
 - squat
+
 approvers:
 - brancz
 - metalmatze
