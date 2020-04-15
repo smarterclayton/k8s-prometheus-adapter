@@ -7,7 +7,7 @@ ML_PLATFORMS=linux/amd64,linux/arm,linux/arm64,linux/ppc64le,linux/s390x
 OUT_DIR?=./_output
 
 VERSION?=latest
-GOIMAGE=golang:1.12
+GOIMAGE=golang:1.13
 GO111MODULE=on
 export GO111MODULE
 
@@ -33,7 +33,7 @@ all: $(OUT_DIR)/$(ARCH)/adapter
 
 src_deps=$(shell find pkg cmd -type f -name "*.go")
 $(OUT_DIR)/%/adapter: $(src_deps)
-	CGO_ENABLED=0 GOARCH=$* go build -tags netgo -o $(OUT_DIR)/$*/adapter github.com/directxman12/k8s-prometheus-adapter/cmd/adapter
+	CGO_ENABLED=0 GOARCH=$* go build -mod vendor -tags netgo -o $(OUT_DIR)/$*/adapter github.com/directxman12/k8s-prometheus-adapter/cmd/adapter
 	
 docker-build:
 	cp deploy/Dockerfile $(TEMP_DIR)
